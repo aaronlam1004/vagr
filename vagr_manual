@@ -1,0 +1,86 @@
+USAGE:
+
+	vagr [command]
+
+COMMANDS:
+
+	add [ovfname/ovaname]
+
+		**NOTE: VirtualBox VM images (.ova & .ovf) that Vagr can properly use have the following included
+			-- VirtualBox Guest Additions installed
+			-- [sudo usermod -aG vboxsf <VM name>] already ran and configured
+
+		adds virtual machine from .ovf or .ova image file
+
+	init [vmname/uuid]
+
+		creates Vagr file that runs Vagr machine and sets up the basic SSH port forwarding info
+
+	rename [vmname/uuid] [new name]
+
+		renames the Vagr machine
+
+	destroy 
+
+		removes the Vagr machine
+
+	up
+
+		starts the Vagr machine
+
+	pause
+
+		pauses the Vagr machine
+
+	resume
+
+		unpauses the Vagr machine
+
+	down
+
+		powers off the Vagr machine
+	
+	reload
+
+		reloads/reboots the Vagr machine
+
+	add_shared [name] [folder path]
+
+		adds a share folder with the given name and the directory path
+
+	setup_shared [name]
+
+		sets up the share folder with the given name inside of the Vagr machine
+
+ 	del_shared [name]
+
+ 		**NOTE: the folder inside Vagr machine from setup_shared will still remain just with no files inside the folder
+
+ 		deletes the share folder with the given name
+
+	add_port [rulename] [host ip] [host port] [guest ip] [guest port]
+
+		adds a port with specified rulename to the Vagr machine
+			[rulename] [host port] [guest port] to forward guest port to port of localhost
+			[rulename] [host ip] [host port] [guest port] will forward guest port to specified port of the IP address specified for the host to access 
+			[rulename] [host ip] [host port] [guest ip] [guest port] will forward guest IP address and port on VM to specified IP address and port specified for the host to access
+
+	del_port [rulename]
+
+		deletes the port with the specified rulename from the Vagr machine
+
+	ssh
+
+		SSHs to the Vagr machine
+	
+	list [--running] [--name] [--shared] [--ports]
+
+		lists all the virtual machines currently in VirtualBox
+			[--running] lists all the VMs that are currently running on VirtualBox
+			[--name] lists the name of the Vagr machine
+			[--shared] lists all the shared folders between the Vagr machine and the host machine
+			[--ports] lists all the installed ports currently between the Vagr machine and the host machine
+
+	manual
+
+		opens this manual
