@@ -29,7 +29,6 @@ for %%a in (%valid_commands%) do (
 		if "%arg1%" == "down" (goto STOP_VM)
 		if "%arg1%" == "reload" (goto RELOAD_VM)
 		if "%arg1%" == "add_shared" (goto ADD_SHARE)
-		if "%arg1%" == "setup_shared" (goto INIT_SHARE)
 		if "%arg1%" == "del_shared" (goto DEL_SHARE)
 		if "%arg1%" == "add_port" (goto ADD_PORT)
 		if "%arg1%" == "del_port" (goto DELETE_PORT)
@@ -59,11 +58,15 @@ if "%arg2%" == "" (
 	%vbox% modifyvm "%arg2%" --nic1 nat
 	%vbox% modifyvm "%arg2%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
 	%lib%\write_vagr -m %arg2% -p "ssh tcp 127.0.0.1 2222 _ 22"
+
+	%vbox% sharedfolder add "%arg2%" --name home --hostpath "%cd%" --automount
+	%lib%\write_vagr -e -f "%cd%"
 	echo Vagr machine all set up!
 	echo 	User: buddy
 	echo 	Password: 1234567890
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
+	echo 	Current folder "%file_dir%": in /media/sf_home
 )
 exit /b
 
@@ -198,23 +201,6 @@ if "%ERRORLEVEL%" == "0" (
 	exit /b 
 )
 
-:INIT_SHARE
-set arg2=%2
-if "%arg2%" == "" (goto PRINT_ERROR)
-
-tasklist > "tasklist.txt"
-findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
-if "%ERRORLEVEL%" == "0" (
-	del "tasklist.txt" 
-	echo Setting up shared folder %arg2%
-	%lib%\execute_vagr --init_shared %arg2%
-	exit /b
-) else (
-	del "tasklist.txt"
-	echo Cannot setup %arg2% folder because Vagr machine is not running.
-	exit /b
-)
-
 :DEL_SHARE
 set arg2=%2
 if "%arg2%" == "" (goto PRINT_ERROR)
@@ -342,7 +328,6 @@ echo 	resume
 echo 	down      	
 echo 	reload    
 echo 	add_shared [name] [folder path]
-echo 	setup_shared [name]
 echo 	del_shared [name]
 echo 	add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
 echo 	del_port  [rulename]
