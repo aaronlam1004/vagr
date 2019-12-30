@@ -117,7 +117,6 @@ if "%ERRORLEVEL%" == "0" (
 ) else (
 	del "tasklist.txt"
 	echo Starting VM... 
-	echo 	User: buddy
 	echo 	Password: 1234567890
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
@@ -276,7 +275,6 @@ if "%ERRORLEVEL%" == "0" (
 	if exist "Vagr.json" (
 
 		echo SSHing to VM... 
-		echo 	User: buddy
 		echo 	Password: 1234567890
 		echo 	IP Address: 127.0.0.1
 		echo 	Port: 2222
