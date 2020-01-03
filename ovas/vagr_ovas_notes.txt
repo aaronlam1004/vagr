@@ -1,1 +1,9 @@
+/etc/default/grub
+	GRUB_TIMEOUT=1
+	GRUB_RECORDFAIL_TIMEOUT=$GRUB_TIMEOUT
 
+sudo passwd root
+sudo passwd -u root
+
+/etc/ssh/sshd_config
+	PermitRootLogin yes
