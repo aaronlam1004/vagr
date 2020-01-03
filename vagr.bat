@@ -1,12 +1,12 @@
 @echo off
 
 set vbox="C:\Program Files\Oracle\VirtualBox\VBoxManage"
-
 set file_dir=%~dp0
 set lib=%file_dir%\lib
-set ssh_path=%file_dir%\lib\ssh\bin
+set ssh_path=%lib%\ssh\bin
+set putty_path=%lib%\putty
 
-set valid_commands="add" "init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "setup_shared" "del_shared" "add_port" "del_port" "ssh" "list" "manual"
+set valid_commands="add" "init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh" "putty" "list" "manual"
 
 set arg1=%1
 goto CHECK_ARGS
@@ -29,10 +29,10 @@ for %%a in (%valid_commands%) do (
 		if "%arg1%" == "down" (goto STOP_VM)
 		if "%arg1%" == "reload" (goto RELOAD_VM)
 		if "%arg1%" == "add_shared" (goto ADD_SHARE)
-		if "%arg1%" == "del_shared" (goto DEL_SHARE)
 		if "%arg1%" == "add_port" (goto ADD_PORT)
 		if "%arg1%" == "del_port" (goto DELETE_PORT)
 		if "%arg1%" == "ssh" (goto SSH)
+		if "%arg1%" == "putty" (goto PUTTY)
 		if "%arg1%" == "list" (goto LIST)
 		if "%arg1%" == "manual" (goto MANUAL)
 	)
@@ -59,14 +59,11 @@ if "%arg2%" == "" (
 	%vbox% modifyvm "%arg2%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
 	%lib%\write_vagr -m %arg2% -p "ssh tcp 127.0.0.1 2222 _ 22"
 
-	%vbox% sharedfolder add "%arg2%" --name home --hostpath "%cd%" --automount
-	%lib%\write_vagr -e -f "%cd%"
 	echo Vagr machine all set up!
 	echo 	User: buddy
 	echo 	Password: 1234567890
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
-	echo 	Current folder "%file_dir%": in /media/sf_home
 )
 exit /b
 
@@ -121,6 +118,10 @@ if "%ERRORLEVEL%" == "0" (
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
 	%lib%\execute_vagr --start
+	%lib%\execute_vagr --add_shared vagr "%cd%"
+	echo Just a moment...
+	timeout /t 60 /nobreak > nul
+	%lib%\execute_vagr --init_shared vagr /home/vagr_home
 	exit /b
 )
 
@@ -172,7 +173,10 @@ findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" (
 	del "tasklist.txt"
 	echo Reloading VM...
-	%lib%\execute_vagr --reload 
+	%lib%\execute_vagr --reload
+	echo Just a moment...
+	timeout /t 60 /nobreak > nul
+	%lib%\execute_vagr --init_shared vagr /home/vagr_home
 	exit /b
 ) else (
 	del "tasklist.txt"
@@ -187,33 +191,20 @@ if "%arg2%" == "" (goto PRINT_ERROR)
 set arg3=%~3
 if "%arg3%" == "" (goto PRINT_ERROR)
 
+set arg4=%~4
+if "arg4%" == "" (goto PRINT_ERROR)
+
 tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" (
 	del "tasklist.txt"
-	echo Cannot add %arg2% folder because Vagr machine is running.
-	exit /b
-) else (
-	del "tasklist.txt"
 	%lib%\execute_vagr --add_shared %arg2% "%arg3%"
-	%lib%\write_vagr -e -f %arg2%
+	%lib%\execute_vagr.py --init_shared %arg2% "%arg4%"
 	exit /b 
-)
-
-:DEL_SHARE
-set arg2=%2
-if "%arg2%" == "" (goto PRINT_ERROR)
-
-tasklist > "tasklist.txt"
-findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
-if "%ERRORLEVEL%" == "0" ( 
-	del "tasklist.txt"
-	echo Cannot remove %arg2% folder because Vagr machine is running.
-	exit /b
 ) else (
 	del "tasklist.txt"
-	%lib%\execute_vagr --del_shared %arg2%
-	exit /b 
+	echo Cannot add %arg2% folder because Vagr machine is not running.
+	exit /b
 )
 
 :ADD_PORT
@@ -251,9 +242,6 @@ if "%ERRORLEVEL%" == "0" (
 )
 
 :DELETE_PORT
-set arg2=%2
-if "%arg2%" == "" (goto PRINT_ERROR)
-
 tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" ( 
@@ -262,6 +250,10 @@ if "%ERRORLEVEL%" == "0" (
 	exit /b
 ) else (
 	del "tasklist.txt"
+
+	set arg2=%2
+	if "%arg2%" == "" (goto PRINT_ERROR)
+
 	%lib%\execute_vagr --delete_port %arg2%
 	exit /b
 )
@@ -271,34 +263,77 @@ tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" ( 
 	del "tasklist.txt"
-
 	if exist "Vagr.json" (
 
-		echo SSHing to VM... 
-		echo 	Password: 1234567890
-		echo 	IP Address: 127.0.0.1
-		echo 	Port: 2222
+	echo ssh Forwarding to VM... 
+	echo 	Password: 1234567890
+	echo 	IP Address: 127.0.0.1
+	echo 	Port: 2222
 
-		%ssh_path%\ssh buddy@127.0.0.1 -p 2222
-		exit /b
+	%ssh_path%\ssh vagr@127.0.0.1 -p 2222
+	exit /b
 	) else (
-		echo Missing: Vagr.json
-		echo Run: vagr setup [vmname/uuid]
-		exit /b
+	echo Missing: Vagr.json
+	echo Run: vagr setup [vmname/uuid]
+	exit /b
 	)
-
+	
 ) else (
 	del "tasklist.txt"
 	echo Cannot SSH because Vagr machine is not running.
 	exit /b
 )
 
+:PUTTY
+tasklist > "tasklist.txt"
+findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
+if "%ERRORLEVEL%" == "0" ( 
+	del "tasklist.txt"
+	if "%2" == "" (
+		if exist "Vagr.json" (
+
+		echo ssh Forwarding to VM... 
+		echo 	Password: 1234567890
+		echo 	IP Address: 127.0.0.1
+		echo 	Port: 2222
+
+		%putty_path%\putty -ssh vagr@127.0.0.1 -P 2222
+		exit /b
+		) else (
+		echo Missing: Vagr.json
+		echo Run: vagr setup [vmname/uuid]
+		exit /b
+		)
+	) else if "%2" == "--X11" (
+		if exist "Vagr.json" (
+
+		echo ssh Forwarding to VM... 
+		echo 	Password: 1234567890
+		echo 	IP Address: 127.0.0.1
+		echo 	Port: 2222
+
+		%putty_path%\putty -ssh -X vagr@127.0.0.1 -P 2222
+		exit /b
+		) else (
+		echo Missing: Vagr.json
+		echo Run: vagr setup [vmname/uuid]
+		exit /b
+		)
+	) else (goto PRINT_ERROR)
+	
+) else (
+	del "tasklist.txt"
+	echo Cannot SSH because Vagr machine is not running.
+	exit /b
+)
 :LIST
 set arg2=%2
 if "%arg2%" == "" (
 	%vbox% list vms
 ) else if "%arg2%" == "--running" (
 	%vbox% list runningvms
+) else if "%arg2%" == "--networks" (
+	%vbox% list hostonlyifs
 ) else if "%arg2%" == "--shared" (
 	%lib%\execute_vagr --list_shared
 ) else if "%arg2%" == "--ports" (
@@ -325,12 +360,12 @@ echo 	pause
 echo 	resume    
 echo 	down      	
 echo 	reload    
-echo 	add_shared [name] [folder path]
-echo 	del_shared [name]
+echo 	add_shared [name] [host folder path] [guest folder path]
 echo 	add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
 echo 	del_port  [rulename]
-echo 	ssh
-echo 	list [--running] [--name] [--shared] [--ports] 
+echo 	ssh 
+echo 	putty [--X11]
+echo 	list [--running] [--networks] [--name] [--shared] [--ports] 
 echo 	manual
 
 exit /b
