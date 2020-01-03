@@ -17,21 +17,12 @@ if os.path.exists('Vagr.json'):
     elif sys.argv[1] == '--remove':
         subprocess.run(['VBoxManage', 'unregistervm', vagr_json['machine'], '--delete'])
     elif sys.argv[1] == '--add_shared':
-        folders = [folder[0] for folder in vagr_json['shared']]
-        if sys.argv[2] not in folders:
-            subprocess.run(['VBoxManage', 'sharedfolder', 'add', vagr_json['machine'], '--name', sys.argv[2], '--hostpath', sys.argv[3], '--automount'])
-    elif sys.argv[1] == '--del_shared':
-        folders = [folder[0] for folder in vagr_json['shared']]
-        for folder in folders:
-            if sys.argv[2] == folder:
-                print('Deleting shared folder ' + str(sys.argv[2]) + '...')
-                i = folders.index(sys.argv[2])
-                subprocess.run(['VBoxManage', 'sharedfolder', 'remove', vagr_json['machine'], '--name', sys.argv[2]])
-                vagr_json['shared'].pop(i)
-                json_file.close()
-                os.chdir(cwd)
-                with open('Vagr.json', 'w') as (outfile):
-                    json.dump(vagr_json, outfile)
+        print('Adding shared folder ' + sys.argv[2] + '...')
+        subprocess.run(['VBoxManage', 'sharedfolder', 'add', vagr_json['machine'], '--name', sys.argv[2], '--hostpath', sys.argv[3], '--transient'])
+    elif sys.argv[1] == '--init_shared':
+        print('Setting up shared folder ' + sys.argv[2] + ' ...')
+        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/bin/sh', '--username', 'root', '--password', '1234567890', '--quiet', '--', 'sh/arg0', '-c', 'mkdir {folder} 2>null'.format(folder=sys.argv[3])])
+        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/sbin/mount.vboxsf', '--username', 'root', '--password', '1234567890', '--quiet', '--', 'mount.vboxsf/arg0', sys.argv[2], sys.argv[3]])
     elif sys.argv[1] == '--list_shared':
         for folder in vagr_json['shared']:
             print(folder)
@@ -49,11 +40,11 @@ if os.path.exists('Vagr.json'):
                 print('Deleting port ' + str(sys.argv[2]) + '...')
                 subprocess.run(['VBoxManage', 'modifyvm', vagr_json['machine'], '--natpf1', 'delete', sys.argv[2]])
                 vagr_json['ports'].remove(port)
+                json_file.close()
+                os.chdir(cwd)
+                with open('Vagr.json', 'w') as (outfile):
+                    json.dump(vagr_json, outfile)
                 break
-        json_file.close()
-        os.chdir(cwd)
-        with open('Vagr.json', 'w') as (outfile):
-            json.dump(vagr_json, outfile)
 else:
     print('Missing: Vagr.json')
     print('Run: vagr setup [vmname/uuid]')
