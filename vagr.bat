@@ -6,6 +6,8 @@ set lib=%file_dir%\lib
 set ssh_path=%lib%\ssh\bin
 set putty_path=%lib%\putty
 
+set PATH=%PATH%;%ssh_path%
+
 set valid_commands="add" "init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh" "putty" "list" "manual"
 
 set arg1=%1
@@ -198,8 +200,8 @@ tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" (
 	del "tasklist.txt"
-	%lib%\execute_vagr --add_shared %arg2% "%arg3%"
-	%lib%\execute_vagr.py --init_shared %arg2% "%arg4%"
+	rem %lib%\execute_vagr --add_shared %arg2% "%arg3%"
+	rem %lib%\execute_vagr.py --init_shared %arg2% "%arg4%"
 	exit /b 
 ) else (
 	del "tasklist.txt"
@@ -270,7 +272,7 @@ if "%ERRORLEVEL%" == "0" (
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
 
-	%ssh_path%\ssh vagr@127.0.0.1 -p 2222
+	ssh vagr@127.0.0.1 -p 2222
 	exit /b
 	) else (
 	echo Missing: Vagr.json
