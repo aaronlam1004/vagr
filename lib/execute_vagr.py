@@ -21,11 +21,8 @@ if os.path.exists('Vagr.json'):
         subprocess.run(['VBoxManage', 'sharedfolder', 'add', vagr_json['machine'], '--name', sys.argv[2], '--hostpath', sys.argv[3], '--transient'])
     elif sys.argv[1] == '--init_shared':
         print('Setting up shared folder ' + sys.argv[2] + ' ...')
-        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/bin/sh', '--username', 'root', '--password', '1234567890', '--quiet', '--', 'sh/arg0', '-c', 'mkdir {folder} 2>null'.format(folder=sys.argv[3])])
-        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/sbin/mount.vboxsf', '--username', 'root', '--password', '1234567890', '--quiet', '--', 'mount.vboxsf/arg0', sys.argv[2], sys.argv[3]])
-    elif sys.argv[1] == '--list_shared':
-        for folder in vagr_json['shared']:
-            print(folder)
+        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/bin/sh', '--username', 'root', '--password', 'vagr', '--quiet', '--', 'sh/arg0', '-c', 'mkdir {folder} 2>null'.format(folder=sys.argv[3])])
+        subprocess.run(['VBoxManage', 'guestcontrol', vagr_json['machine'], 'run', '-v', '--exe', '/sbin/mount.vboxsf', '--username', 'root', '--password', 'vagr', '--quiet', '--', 'mount.vboxsf/arg0', sys.argv[2], sys.argv[3]])
     elif sys.argv[1] == '--list_ports':
         for port in vagr_json['ports']:
             print(port)
