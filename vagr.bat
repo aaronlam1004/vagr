@@ -54,7 +54,7 @@ if not exist %ova_folder%\%arg2% (
 	%vbox% import %ova_folder%\%arg2%
 	%vbox% modifyvm "%arg2:~0,-4%" --nic1 nat
 	%vbox% modifyvm "%arg2:~0,-4%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
-	%lib%\write_vagr -m %arg2% -p "ssh tcp 127.0.0.1 2222 _ 22"
+	%lib%\write_vagr -m %arg2:~0,-4% -p "ssh tcp 127.0.0.1 2222 _ 22"
 
 	echo Vagr machine all set up!
 	echo 	User: vagr
