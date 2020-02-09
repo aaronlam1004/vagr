@@ -3,12 +3,13 @@
 set vbox="C:\Program Files\Oracle\VirtualBox\VBoxManage"
 set file_dir=%~dp0
 set lib=%file_dir%\lib
+set ova_folder=%file_dir%\ovas
 set ssh_path=%lib%\ssh\bin
 set putty_path=%lib%\putty
 
 set PATH=%PATH%;%ssh_path%
 
-set valid_commands="add" "init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh" "putty" "list" "manual"
+set valid_commands="init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh" "putty" "list" "manual"
 
 set arg1=%1
 goto CHECK_ARGS
@@ -21,8 +22,7 @@ exit /b
 set valid=false
 for %%a in (%valid_commands%) do (
 	if "%arg1%" == %%a (
-		if "%arg1%" == "add" (goto ADD_VM)
-		if "%arg1%" == "init" (goto SETUP)
+		if "%arg1%" == "init" (goto SETUP_VM)
 		if "%arg1%" == "destroy" (goto REMOVE_VM)
 		if "%arg1%" == "rename" (goto RENAME_VM)
 		if "%arg1%" == "up" (goto START_VM)
@@ -44,26 +44,21 @@ if "%valid%" == "false" (
 	exit /b
 )
 
-:ADD_VM
+:SETUP_VM
 set arg2=%2
 if "%arg2%" == "" (goto PRINT_ERROR)
-echo Adding Vagr machine ... 
-%vbox% import "%arg2%"
-exit /b
-
-:SETUP
-set arg2=%2
-if "%arg2%" == "" (
-	echo No Vagr machine specified but still setting up.
-	%lib%\write_vagr -m ""
-) else (
-	%vbox% modifyvm "%arg2%" --nic1 nat
-	%vbox% modifyvm "%arg2%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
+if not exist %ova_folder%\%arg2% (
+	echo "%arg2%" not found in ovas folder
+) else ( 
+	echo Adding Vagr machine ... 
+	%vbox% import %ova_folder%\%arg2%
+	%vbox% modifyvm "%arg2:~0,-4%" --nic1 nat
+	%vbox% modifyvm "%arg2:~0,-4%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
 	%lib%\write_vagr -m %arg2% -p "ssh tcp 127.0.0.1 2222 _ 22"
 
 	echo Vagr machine all set up!
-	echo 	User: buddy
-	echo 	Password: 1234567890
+	echo 	User: vagr
+	echo 	Password: vagr
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
 )
@@ -116,14 +111,14 @@ if "%ERRORLEVEL%" == "0" (
 ) else (
 	del "tasklist.txt"
 	echo Starting VM... 
-	echo 	Password: 1234567890
+	echo 	Password: vagr
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
 	%lib%\execute_vagr --start
 	%lib%\execute_vagr --add_shared vagr "%cd%"
 	echo Just a moment...
 	timeout /t 60 /nobreak > nul
-	%lib%\execute_vagr --init_shared vagr /home/vagr_home
+	%lib%\execute_vagr --init_shared vagr "/home/vagr_home"
 	exit /b
 )
 
@@ -178,7 +173,7 @@ if "%ERRORLEVEL%" == "0" (
 	%lib%\execute_vagr --reload
 	echo Just a moment...
 	timeout /t 60 /nobreak > nul
-	%lib%\execute_vagr --init_shared vagr /home/vagr_home
+	%lib%\execute_vagr --init_shared vagr "/home/vagr_home"
 	exit /b
 ) else (
 	del "tasklist.txt"
@@ -193,15 +188,12 @@ if "%arg2%" == "" (goto PRINT_ERROR)
 set arg3=%~3
 if "%arg3%" == "" (goto PRINT_ERROR)
 
-set arg4=%~4
-if "arg4%" == "" (goto PRINT_ERROR)
-
 tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" (
 	del "tasklist.txt"
-	rem %lib%\execute_vagr --add_shared %arg2% "%arg3%"
-	rem %lib%\execute_vagr.py --init_shared %arg2% "%arg4%"
+	%lib%\execute_vagr --add_shared %arg2% "%arg3%"
+	%lib%\execute_vagr --init_shared %arg2% /home/%arg2%
 	exit /b 
 ) else (
 	del "tasklist.txt"
@@ -268,7 +260,7 @@ if "%ERRORLEVEL%" == "0" (
 	if exist "Vagr.json" (
 
 	echo ssh Forwarding to VM... 
-	echo 	Password: 1234567890
+	echo 	Password: vagr
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
 
@@ -295,7 +287,7 @@ if "%ERRORLEVEL%" == "0" (
 		if exist "Vagr.json" (
 
 		echo ssh Forwarding to VM... 
-		echo 	Password: 1234567890
+		echo 	Password: vagr
 		echo 	IP Address: 127.0.0.1
 		echo 	Port: 2222
 
@@ -310,7 +302,7 @@ if "%ERRORLEVEL%" == "0" (
 		if exist "Vagr.json" (
 
 		echo ssh Forwarding to VM... 
-		echo 	Password: 1234567890
+		echo 	Password: vagr
 		echo 	IP Address: 127.0.0.1
 		echo 	Port: 2222
 
@@ -336,8 +328,6 @@ if "%arg2%" == "" (
 	%vbox% list runningvms
 ) else if "%arg2%" == "--networks" (
 	%vbox% list hostonlyifs
-) else if "%arg2%" == "--shared" (
-	%lib%\execute_vagr --list_shared
 ) else if "%arg2%" == "--ports" (
 	%lib%\execute_vagr --list_ports
 ) else if "%arg2%" == "--name" (
@@ -353,8 +343,7 @@ exit /b
 echo Usage:
 echo 	vagr [command]
 echo Commands:
-echo 	add [ovfname/ovaname] 
-echo 	init [vmname/uuid] 
+echo 	init [ovfname/ovaname] 
 echo 	rename [vmname/uuid] [new name]
 echo 	destroy 
 echo 	start     
@@ -362,12 +351,12 @@ echo 	pause
 echo 	resume    
 echo 	down      	
 echo 	reload    
-echo 	add_shared [name] [host folder path] [guest folder path]
+echo 	add_shared [name] [host folder path]
 echo 	add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
 echo 	del_port  [rulename]
 echo 	ssh 
 echo 	putty [--X11]
-echo 	list [--running] [--networks] [--name] [--shared] [--ports] 
+echo 	list [--running] [--networks] [--name] [--ports] 
 echo 	manual
 
 exit /b
