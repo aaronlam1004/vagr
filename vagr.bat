@@ -5,7 +5,6 @@ set file_dir=%~dp0
 set lib=%file_dir%\lib
 set ova_folder=%file_dir%\ovas
 set ssh_path=%lib%\ssh\bin
-set putty_path=%lib%\putty
 
 set PATH=%PATH%;%ssh_path%
 
