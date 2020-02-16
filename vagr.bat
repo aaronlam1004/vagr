@@ -45,14 +45,16 @@ if "%valid%" == "false" (
 :SETUP_VM
 set arg2=%2
 if "%arg2%" == "" (goto PRINT_ERROR)
+set arg3=%~3
+if "%arg3%" == "" (goto PRINT_ERROR)
 if not exist %ova_folder%\%arg2% (
 	echo "%arg2%" not found in ovas folder
 ) else ( 
 	echo Adding Vagr machine ... 
-	%vbox% import %ova_folder%\%arg2%
-	%vbox% modifyvm "%arg2:~0,-4%" --nic1 nat
-	%vbox% modifyvm "%arg2:~0,-4%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
-	%lib%\write_vagr -m %arg2:~0,-4% -p "ssh tcp 127.0.0.1 2222 _ 22"
+	%vbox% import %ova_folder%\%arg2% --vsys 0 --vmname "%arg3%"
+	%vbox% modifyvm "%arg3%" --nic1 nat
+	%vbox% modifyvm "%arg3%" --natpf1 "ssh, tcp, 127.0.0.1, 2222, , 22"
+	%lib%\write_vagr -m "%arg3%" -p "ssh tcp 127.0.0.1 2222 _ 22"
 
 	echo Vagr machine all set up!
 	echo 	User: vagr
@@ -299,7 +301,7 @@ exit /b
 echo Usage:
 echo 	vagr [command]
 echo Commands:
-echo 	init [ovfname/ovaname] 
+echo 	init [ovfname/ovaname] [vmname]
 echo 	rename [vmname/uuid] [new name]
 echo 	destroy 
 echo 	start     
