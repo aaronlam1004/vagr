@@ -5,10 +5,11 @@ set file_dir=%~dp0
 set lib=%file_dir%\lib
 set ova_folder=%file_dir%\ovas
 set ssh_path=%lib%\ssh\bin
+set putty_path=%lib%\putty
 
 set PATH=%PATH%;%ssh_path%
 
-set valid_commands="init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh"  "list" "manual"
+set valid_commands="init" "destroy" "rename" "up" "pause" "resume" "down" "reload" "add_shared" "del_shared" "add_port" "del_port" "ssh" "putty" "exec" "list" "manual"
 
 set arg1=%1
 goto CHECK_ARGS
@@ -33,6 +34,8 @@ for %%a in (%valid_commands%) do (
 		if "%arg1%" == "add_port" (goto ADD_PORT)
 		if "%arg1%" == "del_port" (goto DELETE_PORT)
 		if "%arg1%" == "ssh" (goto SSH)
+		if "%arg1%" == "putty" (goto PUTTY)
+		if "%arg1%" == "exec" (goto EXEC)
 		if "%arg1%" == "list" (goto LIST)
 		if "%arg1%" == "manual" (goto MANUAL)
 	)
@@ -57,7 +60,6 @@ if not exist %ova_folder%\%arg2% (
 	%lib%\write_vagr -m "%arg3%" -p "ssh tcp 127.0.0.1 2222 _ 22"
 
 	echo Vagr machine all set up!
-	echo 	User: vagr
 	echo 	Password: vagr
 	echo 	IP Address: 127.0.0.1
 	echo 	Port: 2222
@@ -278,6 +280,63 @@ if "%ERRORLEVEL%" == "0" (
 	exit /b
 )
 
+:PUTTY
+set arg2=%2
+tasklist > "tasklist.txt"
+findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
+if "%ERRORLEVEL%" == "0" ( 
+	del "tasklist.txt"
+	if "%arg2%" == "-x" (
+		if exist "Vagr.json" (
+
+		echo ssh X11 Forwarding to VM... 
+		echo 	Password: vagr
+		echo 	IP Address: 127.0.0.1
+		echo 	Port: 2222
+
+		%putty_path%/putty -ssh -X vagr@127.0.0.1 -P 2222
+		exit /b
+		) else (
+		echo Missing: Vagr.json
+		echo Run: vagr setup [vmname/uuid]
+		exit /b
+		)
+	) else if "%arg2%" == "" (
+		if exist "Vagr.json" (
+
+		echo ssh Forwarding to VM... 
+		echo 	Password: vagr
+		echo 	IP Address: 127.0.0.1
+		echo 	Port: 2222
+
+		%putty_path%/putty -ssh vagr@127.0.0.1 -P 2222
+		exit /b
+		) else (
+		echo Missing: Vagr.json
+		echo Run: vagr setup [vmname/uuid]
+		exit /b
+		)
+	) else (goto PRINT_ERROR) 
+
+) else (
+	del "tasklist.txt"
+	echo Cannot SSH because Vagr machine is not running.
+	exit /b
+)
+
+:EXEC
+set arg2=%2
+if "%arg2%" == "" (goto PRINT_ERROR)
+tasklist > "tasklist.txt"
+findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
+if "%ERRORLEVEL%" == "0" (
+	del "tasklist.txt"
+	echo "%arg2%" > "terminal_style.txt"
+	%putty_path%/plink -ssh -X vagr@127.0.0.1 -P 2222 -pw vagr -t -m "terminal_style.txt"
+	del "terminal_style.txt"
+) else (echo Cannot open terminal because Vagr machine is not running.)
+exit /b 
+
 :LIST
 set arg2=%2
 if "%arg2%" == "" (
@@ -292,6 +351,7 @@ if "%arg2%" == "" (
 	%lib%\execute_vagr --name
 ) else (goto PRINT_ERROR)
 exit /b
+
 
 :MANUAL
 type %file_dir%\vagr_manual
@@ -312,7 +372,9 @@ echo 	reload
 echo 	add_shared [name] [host folder path]
 echo 	add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
 echo 	del_port  [rulename]
-echo 	ssh 
+echo 	ssh
+echo 	putty [-x]
+echo 	exec [command] 
 echo 	list [--running] [--networks] [--name] [--ports] 
 echo 	manual
 
