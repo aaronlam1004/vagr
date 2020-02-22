@@ -44,4 +44,4 @@ if os.path.exists('Vagr.json'):
                 break
 else:
     print('Missing: Vagr.json')
-    print('Run: vagr init [ovaname/ovfname]')
+    print('Run: vagr init [ovaname/ovfname] [vmname]')
