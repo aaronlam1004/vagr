@@ -331,9 +331,9 @@ tasklist > "tasklist.txt"
 findstr "VBoxHeadless.exe" "tasklist.txt"> NUL
 if "%ERRORLEVEL%" == "0" (
 	del "tasklist.txt"
-	echo "%arg2%" > "terminal_style.txt"
-	%putty_path%/plink -ssh -X vagr@127.0.0.1 -P 2222 -pw vagr -t -m "terminal_style.txt"
-	del "terminal_style.txt"
+	echo "%arg2%" > "exec.txt"
+	%putty_path%/plink -ssh -X vagr@127.0.0.1 -P 2222 -pw vagr -t -m "exec.txt"
+	del "exec.txt"
 ) else (echo Cannot open terminal because Vagr machine is not running.)
 exit /b 
 
