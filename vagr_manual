@@ -4,17 +4,9 @@ USAGE:
 
 COMMANDS:
 
-	add [ovfname/ovaname]
+	init [ovfname/ovaname] [vmname/uuid]
 
-		**NOTE: VirtualBox VM images (.ova & .ovf) that Vagr can properly use have the following included
-			-- VirtualBox Guest Additions installed
-			-- [sudo usermod -aG vboxsf <VM name>] already ran and configured
-
-		adds virtual machine from .ovf or .ova image file
-
-	init [vmname/uuid]
-
-		creates Vagr file that runs Vagr machine and sets up the basic SSH port forwarding info
+		creates Vagr file that creates Vagr machine of type [ovaname] with [vmname] and sets up basic SSH ports
 
 	rename [vmname/uuid] [new name]
 
@@ -48,19 +40,9 @@ COMMANDS:
 
 		adds a share folder with the given name and the directory path
 
-	setup_shared [name]
-
-		sets up the share folder with the given name inside of the Vagr machine
-
- 	del_shared [name]
-
- 		**NOTE: the folder inside Vagr machine from setup_shared will still remain just with no files inside the folder
-
- 		deletes the share folder with the given name
-
 	add_port [rulename] [host ip] [host port] [guest ip] [guest port]
 
-		adds a port with specified rulename to the Vagr machine
+		adds a port with specified rulename to the Vagr machine:
 			[rulename] [host port] [guest port] to forward guest port to port of localhost
 			[rulename] [host ip] [host port] [guest port] will forward guest port to specified port of the IP address specified for the host to access 
 			[rulename] [host ip] [host port] [guest ip] [guest port] will forward guest IP address and port on VM to specified IP address and port specified for the host to access
@@ -72,13 +54,22 @@ COMMANDS:
 	ssh
 
 		SSHs to the Vagr machine
+
+	putty [-x]
+
+		SSHs to Vagr machine using PuTTy
+		including -x to argument will SSH to Vagr machine with X11 forwarding
+
+	exec [command]
+
+		will execute [command] inside the Vagr machine
 	
 	list [--running] [--name] [--shared] [--ports]
 
 		lists all the virtual machines currently in VirtualBox
 			[--running] lists all the VMs that are currently running on VirtualBox
+			[--networks] lists all the networks currently configured in VirtualBox
 			[--name] lists the name of the Vagr machine
-			[--shared] lists all the shared folders between the Vagr machine and the host machine
 			[--ports] lists all the installed ports currently between the Vagr machine and the host machine
 
 	manual
