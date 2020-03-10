@@ -7,6 +7,7 @@ COMMANDS:
 	init [ovfname/ovaname] [vmname/uuid]
 
 		creates Vagr file that creates Vagr machine of type [ovaname] with [vmname] and sets up basic SSH ports
+		NOTE: .ova/.ovf file must be in the ova directory or else this will not work
 
 	rename [vmname/uuid] [new name]
 
