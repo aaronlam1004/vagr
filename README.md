@@ -16,20 +16,20 @@ For more specificity on what commands do, look at [the "official" manual.](https
 Usage:
     vagr [command]
 Commands:
- 	init [ovfname/ovaname] [vmname]
- 	rename [vmname/uuid] [new name]
- 	destroy 
- 	start     
- 	pause 
- 	resume    
- 	down      	
- 	reload    
- 	add_shared [name] [host folder path]
- 	add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
- 	del_port  [rulename]
- 	ssh
- 	putty [-x]
- 	exec [command] 
- 	list [--running] [--networks] [--name] [--ports] 
- 	manual
+    init [ovfname/ovaname] [vmname]
+    rename [vmname/uuid] [new name]
+    destroy 
+    start     
+    pause 
+    resume    
+    down      	
+    reload    
+    add_shared [name] [host folder path]
+    add_port  [rulename] [host ip] [host port] [guest ip] [guest port]
+    del_port  [rulename]
+    ssh
+    putty [-x]
+    exec [command] 
+    list [--running] [--networks] [--name] [--ports] 
+    manual
 ```
