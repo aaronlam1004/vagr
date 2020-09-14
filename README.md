@@ -6,7 +6,7 @@ It is a pretty poorly coded Virtual Machine management software for VirtualBox (
 NOTE: *The version [here](https://github.com/aaronlam1004/vagr-definitive) is made with just **Python** and (in my opinion) better and the one I am currently using.*  
 ## Requirements
 - Windows Operating System
-- VirtualBox
+- [VirtualBox](https://www.virtualbox.org/)
 - Vagr Compatible OVAs
     -  Can create custom based on [the Vagr OVAs guidelines](https://github.com/aaronlam1004/vagr/blob/master/ovas/vagr_ovas_notes.txt)
     -  Can be downloaded from [the Vagr OVAs downloads](https://mega.nz/#F!fslWECaS!ff9DvPb9DRk7nIcA85ZNLQ)
