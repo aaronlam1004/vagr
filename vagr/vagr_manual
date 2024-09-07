@@ -1,0 +1,78 @@
+USAGE:
+
+	vagr [command]
+
+COMMANDS:
+
+	init [ovfname/ovaname] [vmname/uuid]
+
+		creates Vagr file that creates Vagr machine of type [ovaname] with [vmname] and sets up basic SSH ports
+		NOTE: .ova/.ovf file must be in the ova directory or else this will not work
+
+	rename [vmname/uuid] [new name]
+
+		renames the Vagr machine
+
+	destroy 
+
+		removes the Vagr machine
+
+	up
+
+		starts the Vagr machine
+
+	pause
+
+		pauses the Vagr machine
+
+	resume
+
+		unpauses the Vagr machine
+
+	down
+
+		powers off the Vagr machine
+	
+	reload
+
+		reloads/reboots the Vagr machine
+
+	add_shared [name] [folder path]
+
+		adds a share folder with the given name and the directory path
+
+	add_port [rulename] [host ip] [host port] [guest ip] [guest port]
+
+		adds a port with specified rulename to the Vagr machine:
+			[rulename] [host port] [guest port] to forward guest port to port of localhost
+			[rulename] [host ip] [host port] [guest port] will forward guest port to specified port of the IP address specified for the host to access 
+			[rulename] [host ip] [host port] [guest ip] [guest port] will forward guest IP address and port on VM to specified IP address and port specified for the host to access
+
+	del_port [rulename]
+
+		deletes the port with the specified rulename from the Vagr machine
+
+	ssh
+
+		SSHs to the Vagr machine
+
+	putty [-x]
+
+		SSHs to Vagr machine using PuTTy
+		including -x to argument will SSH to Vagr machine with X11 forwarding
+
+	exec [command]
+
+		will execute [command] inside the Vagr machine
+	
+	list [--running] [--name] [--shared] [--ports]
+
+		lists all the virtual machines currently in VirtualBox
+			[--running] lists all the VMs that are currently running on VirtualBox
+			[--networks] lists all the networks currently configured in VirtualBox
+			[--name] lists the name of the Vagr machine
+			[--ports] lists all the installed ports currently between the Vagr machine and the host machine
+
+	manual
+
+		opens this manual

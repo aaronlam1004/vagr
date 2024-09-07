@@ -1,0 +1,14 @@
+sudo apt-get update
+sudo apt-get install build-essential linux-headers-$(uname -r)
+sudo apt-get install virutalbox-guest-dkms
+
+/etc/default/grub
+	GRUB_TIMEOUT=1
+	GRUB_RECORDFAIL_TIMEOUT=$GRUB_TIMEOUT
+sudo update-grub
+
+sudo passwd root
+sudo passwd -u root
+
+/etc/ssh/sshd_config
+	PermitRootLogin yes
